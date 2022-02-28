@@ -21,22 +21,24 @@ public class Converter {
     }
 
     public void setInputNumber(Float inputNumber) {
-
     }
 
-    public ResultListViewAdapter getResultList() {
+    public ResultListViewAdapter getResultList(boolean clear) {
 
         ArrayList<ResultModel> arrayOfResultModel = new ArrayList<ResultModel>();
         ResultListViewAdapter adapter = new ResultListViewAdapter(
                 context, arrayOfResultModel
         );
 
-        for (int i = 0; i < unitList.size(); i++) {
-            String[] unitName = unitList.get(i).split(" ");
-            adapter.add(new ResultModel(unitName[0], getResult(22.0f, unitName[1]), unitName[1]));
-
+        if (clear) {
+            return adapter;
+        } else {
+            for (int i = 0; i < unitList.size(); i++) {
+                String[] unitName = unitList.get(i).split(" ");
+                adapter.add(new ResultModel(unitName[0], getResult(22.0f, unitName[1]), unitName[1]));
+            }
+            return adapter;
         }
-        return adapter;
     }
 
     public ArrayAdapter<String> getInputUnitList() {

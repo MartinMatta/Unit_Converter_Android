@@ -2,15 +2,20 @@ package com.example.unitconverter;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.view.KeyEvent;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.Spinner;
@@ -60,7 +65,7 @@ public class ConvertActivity extends AppCompatActivity
 
 
         converter = FactoryConverter.createObject(typeName, this);
-        listView.setAdapter(converter.getResultList());
+        //listView.setAdapter(converter.getResultList());
         inputUnitAdapter = converter.getInputUnitList();
 
         spinner.setAdapter(inputUnitAdapter);
@@ -71,20 +76,7 @@ public class ConvertActivity extends AppCompatActivity
                 if ((event.getAction() == KeyEvent.ACTION_DOWN) &&
                         (keyCode == KeyEvent.KEYCODE_ENTER)) {
 
-                    converter.setInputUnit(
-                            spinner.getSelectedItem().toString()
-                    );
-
-                    if (inputValue.getText().toString().trim().length() > 0) {
-                        converter.setInputNumber(
-                                Float.parseFloat(String.valueOf(inputValue.getText()))
-                        );
-                    } else {
-                        // zobrazit dialog
-                        Toast.makeText(getApplicationContext(), "yadajte cislo", Toast.LENGTH_LONG).show();
-                    }
-
-                    listView.setAdapter(converter.getResultList());
+                    result();
 
                     return true;
                 }
@@ -105,7 +97,58 @@ public class ConvertActivity extends AppCompatActivity
 
     }
 
-    private void result() {
+    public static void hideKeyboard(Activity activity) {
+        InputMethodManager imm = (InputMethodManager) activity.getSystemService(Activity.INPUT_METHOD_SERVICE);
+        //Find the currently focused view, so we can grab the correct window token from it.
+        View view = activity.getCurrentFocus();
+        //If no view currently has focus, create a new one, just so we can grab a window token from it
+        if (view == null) {
+            view = new View(activity);
+        }
+        imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+    }
 
+    private void noInputDialog() {
+        LayoutInflater layoutInflaterAndroid = LayoutInflater.from(ConvertActivity.this);
+        View mView = layoutInflaterAndroid.inflate(R.layout.no_input_dialog, null);
+        AlertDialog.Builder alertDialogBuilderUserInput = new AlertDialog.Builder(
+                ConvertActivity.this,  R.style.CustomAlertDialog
+        );
+        alertDialogBuilderUserInput.setView(mView);
+
+        AlertDialog alertDialogAndroid = alertDialogBuilderUserInput.create();
+
+        Button btnCancel = (Button) mView.findViewById(R.id.btnOk);
+
+        btnCancel.setOnClickListener(new View.OnClickListener() {
+
+            @Override
+            public void onClick(View view) {
+                alertDialogAndroid.dismiss();
+            }
+        });
+
+        alertDialogAndroid.show();
+
+    }
+
+    private void result() {
+        hideKeyboard(ConvertActivity.this);
+
+        converter.setInputUnit(
+                spinner.getSelectedItem().toString()
+        );
+
+        if (inputValue.getText().toString().trim().length() > 0) {
+            converter.setInputNumber(
+                    Float.parseFloat(String.valueOf(inputValue.getText()))
+            );
+
+            listView.setAdapter(converter.getResultList(false));
+
+        } else {
+            noInputDialog();
+            listView.setAdapter(converter.getResultList(true));
+        }
     }
 }
